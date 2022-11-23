@@ -45,7 +45,7 @@ void initSocket(struct sockaddr_in& sockAddr, const IPv4& IP, const uint16_t por
  * @return true
  * @return false 
  */
-bool clientSocketSetting(int clientSocketDescriptor, const IPv4& IP, const uint16_t port) {
+bool clientSocketSetting(int& clientSocketDescriptor, const IPv4& IP, const uint16_t port) {
     struct sockaddr_in serverSocket = {0, 0, 0, 0};
     errno = 0;
 
@@ -95,6 +95,9 @@ bool clientConnection(int clientSocketDescriptor) {
     std::string msg;
 
     while(not isConnectionTerminated.load()) {
+#ifdef DEBUG
+        sleep(1);
+#endif
         switch(recvMessage(clientSocketDescriptor, msg)) {
         case RECV_FAILURE:
             std::cerr << "Error: Error while receive message from server\n";
@@ -104,7 +107,7 @@ bool clientConnection(int clientSocketDescriptor) {
             isConnectionTerminated.store(true);
             break; 
         case RECV_SUCCESS:
-            std::cout << msg << '\n';
+            std::cout << msg;
             break;
         default: break;
         }
@@ -131,7 +134,7 @@ bool chattingWithServer(int clientSocketDescriptor, std::string nickname) {
     std::thread connectThread(clientConnection, clientSocketDescriptor);
     connectThread.detach();
 
-    if(sendMessage(clientSocketDescriptor, nickname)) {
+    if(not sendMessage(clientSocketDescriptor, nickname)) {
         std::cerr << "Error: Error while sending nickname to server\n";
         return false;
     }
@@ -144,7 +147,7 @@ bool chattingWithServer(int clientSocketDescriptor, std::string nickname) {
         }
     }
 
-    std::cout << "**Server Terminated!\n";
+    std::cout << "** Server Terminated!\n";
 
     return true;
 }

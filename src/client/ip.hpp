@@ -5,14 +5,6 @@
 #include <cstdint>
 #include <regex>
 
-template<char C>
-std::istream& expect(std::istream& in) {
-	if((in >> std::ws).peek() == C) in.ignore();
-	else in.setstate(std::ios_base::failbit);
-
-	return in;
-}
-
 class IPv4 final {
 public:
 	static const int SIZE = 4;
@@ -20,23 +12,7 @@ public:
 	// constructor
 	IPv4() = default;			// Use compiler-generated default constructor
 	IPv4(const uint32_t r) : ip_(r) {}
-	IPv4(const std::string r) {
-#ifdef DEBUG
-	std::cout << "[DEBUG] IPv4 Constructor begin\n";
-#endif
-
-	uint32_t a, b, c, d;
-	std::istringstream iss(r);
-
-	if(iss >> a >> expect<'.'> >> b >> expect<'.'> >> c >> expect<'.'> >> d) {
-		ip_ = (a << 24) bitor (b << 16) bitor (c << 8) bitor d;
-		return;
-	}
-
-	std::cerr << "Error: Error while converting string to IP" << std::endl;
-	
-	return;
-}
+	IPv4(const std::string r);
 
 	// assign operator
 	// IPv4& operator = (const IPv4& r) { this->ip_ = r.ip_; return *this; }

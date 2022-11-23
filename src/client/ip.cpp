@@ -14,7 +14,6 @@ IPv4::IPv4(const std::string r) {
 #endif
 
 	uint32_t a, b, c, d;
-	char dot;
 	std::istringstream iss(r);
 
 	if(iss >> a >> expect<'.'> >> b >> expect<'.'> >> c >> expect<'.'> >> d) {

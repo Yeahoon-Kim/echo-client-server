@@ -44,6 +44,9 @@ void printConnnectionSuccessful(const struct sockaddr_in& clientSocket) {
 void threadConnection(int clientSocketDescriptor, const struct sockaddr_in& clientSocket, bool isEcho, bool isBroadcast) {
 #ifdef DEBUG
     debug << "threadConnection begin" << std::endl;
+    debug << "clientSocketDescriptor: " << clientSocketDescriptor << std::endl;
+    debug << "isEcho: " << (isEcho ? "True": "False") << '\n';
+    debug << "isBroadcast: " << (isBroadcast ? "True": "False") << '\n';
 #endif
     std::string nickname, msg;
     std::ostringstream oss;
@@ -70,8 +73,8 @@ void threadConnection(int clientSocketDescriptor, const struct sockaddr_in& clie
 
             break;
         case RECV_SUCCESS:
-            oss.clear();
-            oss << nickname << ": " << msg;
+            oss.str(""), oss.clear();
+            oss << nickname << ": " << msg << '\n';
             std::cout << oss.str();
             if(isBroadcast) broadcast(clientSocketDescriptor, oss.str(), isEcho);
             else if(isEcho) sendMessage(clientSocketDescriptor, msg);

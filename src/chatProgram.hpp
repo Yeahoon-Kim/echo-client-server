@@ -31,4 +31,5 @@ bool sendMessage(const int sockfd, const std::string& msg);
 
 #ifdef DEBUG
 void printSocketError();
+void printSendError();
 #endif

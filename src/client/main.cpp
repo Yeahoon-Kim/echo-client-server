@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
 
     if(not param.parse(argc, argv)) exit(EXIT_FAILURE);
 
-    if(clientSocketSetting(clientSocketDescriptor, param.getIP(), param.getPort())) {
+    if(not clientSocketSetting(clientSocketDescriptor, param.getIP(), param.getPort())) {
         exit(EXIT_FAILURE);
     }
 
