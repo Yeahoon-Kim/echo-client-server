@@ -10,7 +10,7 @@ int main(int argc, char* argv[]) {
     signal(SIGTERM, serverInterruptHandler);
 
     int serverSocketDescriptor, clientSocketDescriptor;
-    struct sockaddr_in clientSocket{ 0 };
+    struct sockaddr_in clientSocket{0, 0, 0, 0};
     Param param;
 
     if(not param.parse(argc, argv)) exit(EXIT_FAILURE);
@@ -25,7 +25,9 @@ int main(int argc, char* argv[]) {
             clientList.insert(clientSocketDescriptor);
         }();
         
-        thread(threadConnection, clientSocket, param.isEcho(), param.isBroadcast());
+        thread connectThread(threadConnection, clientSocketDescriptor, clientSocket, param.isEcho(), param.isBroadcast());
+
+        connectThread.detach();
     }
 
     return 0;

@@ -113,7 +113,7 @@ bool serverSocketSetting(int& serverSocketDescriptor, const int port) {
 #ifdef DEBUG
     debug << "serverSocketSetting begin\n";
 #endif
-    struct sockaddr_in serverSocket = { 0 };
+    struct sockaddr_in serverSocket = {0, 0, 0, 0};
     errno = 0;
 
     // Create Socket

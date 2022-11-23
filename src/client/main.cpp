@@ -8,7 +8,7 @@ int main(int argc, char* argv[]) {
     signal(SIGINT, clientInterruptHandler);
     signal(SIGTERM, clientInterruptHandler);
 
-    int clientSocketDescriptor;
+    int clientSocketDescriptor = 0;
     string nickName;
     Param param;
 

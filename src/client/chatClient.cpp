@@ -31,9 +31,9 @@ void initSocket(struct sockaddr_in& sockAddr, const IPv4& IP, const uint16_t por
     debug << "initSocket begin\n";
 #endif
 
-    sockAddr.sin_port = htons(port);
-    sockAddr.sin_family = AF_INET;
-    sockAddr.sin_addr.s_addr = htonl(IP);
+    sockAddr.sin_family = AF_INET;          // Use IPv4
+    sockAddr.sin_port = htons(port);        // port
+    sockAddr.sin_addr.s_addr = htonl(IP);   // IP number
 }
 
 /**
@@ -46,7 +46,7 @@ void initSocket(struct sockaddr_in& sockAddr, const IPv4& IP, const uint16_t por
  * @return false 
  */
 bool clientSocketSetting(int clientSocketDescriptor, const IPv4& IP, const uint16_t port) {
-    struct sockaddr_in serverSocket = { 0 };
+    struct sockaddr_in serverSocket = {0, 0, 0, 0};
     errno = 0;
 
 #ifdef DEBUG
@@ -109,6 +109,8 @@ bool clientConnection(int clientSocketDescriptor) {
         default: break;
         }
     }
+
+    return true;
 }
 
 /**
@@ -126,7 +128,8 @@ bool chattingWithServer(int clientSocketDescriptor, std::string nickname) {
 
     std::string msg;
 
-    std::thread(clientConnection, clientSocketDescriptor);
+    std::thread connectThread(clientConnection, clientSocketDescriptor);
+    connectThread.detach();
 
     if(sendMessage(clientSocketDescriptor, nickname)) {
         std::cerr << "Error: Error while sending nickname to server\n";

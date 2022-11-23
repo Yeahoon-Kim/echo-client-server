@@ -9,10 +9,15 @@ std::istream& expect(std::istream& in) {
 }
 
 IPv4::IPv4(const std::string r) {
+#ifdef DEBUG
+	std::cout << "[DEBUG] IPv4 Constructor begin\n";
+#endif
+
 	uint32_t a, b, c, d;
+	char dot;
 	std::istringstream iss(r);
 
-	if(iss >> a >> (expect<'.'>) >> b >> (expect<'.'>) >> c >> (expect<'.'>) >> d) {
+	if(iss >> a >> expect<'.'> >> b >> expect<'.'> >> c >> expect<'.'> >> d) {
 		ip_ = (a << 24) bitor (b << 16) bitor (c << 8) bitor d;
 		return;
 	}
