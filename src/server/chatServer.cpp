@@ -84,8 +84,8 @@ void threadConnection(int clientSocketDescriptor, const struct sockaddr_in& clie
 /**
  * @brief Initialize socket structure(Protocol type, IP, port)
  * 
- * @param sockAddr 
- * @param port 
+ * @param sockAddr socket structure want to initialize
+ * @param port port number want to bind
  * @return true 
  * @return false 
  */
@@ -162,7 +162,7 @@ bool serverSocketSetting(int& serverSocketDescriptor, const int port) {
 }
 
 /**
- * @brief 
+ * @brief wait for client and accept client's connection requests
  * 
  * @param serverSocketDescriptor server's welcoming socket
  * @param clientSocketPtr socket structure pointer
@@ -189,11 +189,11 @@ int acceptConnection(const int serverSocketDescriptor, struct sockaddr* clientSo
 }
 
 /**
- * @brief 
+ * @brief broadcast client's message
  * 
- * @param senderSocketDescriptor 
- * @param msg 
- * @param isMirrored 
+ * @param senderSocketDescriptor socket descriptor connected with sender client
+ * @param msg message want to broadcast
+ * @param isMirrored if isMirrored is on, resend client's message to that client
  * @return true 
  * @return false 
  */

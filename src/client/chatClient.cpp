@@ -1,5 +1,10 @@
 #include "chatClient.hpp"
 
+/**
+ * @brief Signal handler function
+ * 
+ * @param signo signal number
+ */
 void clientInterruptHandler(const int signo) {
     switch(signo) {
     case SIGINT:
@@ -14,6 +19,13 @@ void clientInterruptHandler(const int signo) {
     isConnectionTerminated.store(true);
 }
 
+/**
+ * @brief Initialize socket structure(IP, port)
+ * 
+ * @param sockAddr socket structure
+ * @param IP IP number want to connect
+ * @param port port number want to connect
+ */
 void initSocket(struct sockaddr_in& sockAddr, const IPv4& IP, const uint16_t port) {
 #ifdef DEBUG
     debug << "initSocket begin\n";
@@ -24,6 +36,15 @@ void initSocket(struct sockaddr_in& sockAddr, const IPv4& IP, const uint16_t por
     sockAddr.sin_addr.s_addr = htonl(IP);
 }
 
+/**
+ * @brief Create, initialize socket, and try to connect
+ * 
+ * @param clientSocketDescriptor client socket descriptor
+ * @param IP IP number want to connect
+ * @param port port number want to connect
+ * @return true
+ * @return false 
+ */
 bool clientSocketSetting(int clientSocketDescriptor, const IPv4& IP, const uint16_t port) {
     struct sockaddr_in serverSocket = { 0 };
     errno = 0;
@@ -60,6 +81,13 @@ bool clientSocketSetting(int clientSocketDescriptor, const IPv4& IP, const uint1
     return true;
 }
 
+/**
+ * @brief Receive message from server and print to standard display
+ * 
+ * @param clientSocketDescriptor client socket description number
+ * @return true
+ * @return false
+ */
 bool clientConnection(int clientSocketDescriptor) {
 #ifdef DEBUG
     debug << "threadConnection begin\n";
@@ -83,6 +111,14 @@ bool clientConnection(int clientSocketDescriptor) {
     }
 }
 
+/**
+ * @brief send client's nickname and messages to server 
+ * 
+ * @param clientSocketDescriptor socket description number for connecting server
+ * @param nickname user nickname
+ * @return true
+ * @return false
+ */
 bool chattingWithServer(int clientSocketDescriptor, std::string nickname) {
 #ifdef DEBUG
     debug << "chattingWithServer begin\n";
