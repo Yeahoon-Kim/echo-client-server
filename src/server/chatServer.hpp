@@ -10,6 +10,7 @@
 #define BACKLOG 5
 #define MAX_NICKNAME_LENGTH 20
 
+extern std::atomic<bool> isServerTerminated;
 extern std::unordered_set<int> clientList;
 extern std::mutex m;
 

@@ -3,8 +3,6 @@
 #include "../chatProgram.hpp"
 #include "clientParam.hpp"
 
-#include <atomic>
-
 extern std::atomic<bool> isConnectionTerminated;
 
 void clientInterruptHandler(const int signo);

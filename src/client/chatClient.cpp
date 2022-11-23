@@ -1,5 +1,7 @@
 #include "chatClient.hpp"
 
+int clientSocketDescriptorForSignal;
+
 /**
  * @brief Signal handler function
  * 
@@ -64,6 +66,7 @@ bool clientSocketSetting(int& clientSocketDescriptor, const IPv4& IP, const uint
         return false;
     }
 
+    clientSocketDescriptorForSignal = clientSocketDescriptor;
     initSocket(serverSocket, IP, port);
 
     if(connect(clientSocketDescriptor, (struct sockaddr*)&serverSocket, sizeof(serverSocket))) {
@@ -140,7 +143,8 @@ bool chattingWithServer(int clientSocketDescriptor, std::string nickname) {
     }
 
     while(not isConnectionTerminated.load()) {
-        std::cin >> msg;
+        getline(std::cin, msg);
+        if(isConnectionTerminated.load()) break;
         if(not sendMessage(clientSocketDescriptor, msg)) {
             std::cerr << "Error: Error while sending message to server\n";
             return false;

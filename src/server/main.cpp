@@ -2,6 +2,7 @@
 
 using namespace std;
 
+atomic<bool> isServerTerminated;
 unordered_set<int> clientList;
 mutex m;
 
@@ -15,6 +16,7 @@ int main(int argc, char* argv[]) {
 
     if(not param.parse(argc, argv)) exit(EXIT_FAILURE);
     if(not serverSocketSetting(serverSocketDescriptor, param.getPort())) exit(EXIT_FAILURE);
+    isServerTerminated.store(false);
 
     while( true ) {
         clientSocketDescriptor = acceptConnection(serverSocketDescriptor, (struct sockaddr*)&clientSocket);

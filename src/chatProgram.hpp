@@ -7,6 +7,7 @@
 #include <cstring>
 #include <sstream>
 #include <thread>
+#include <atomic>
 
 #include <sys/socket.h>
 #include <sys/types.h>

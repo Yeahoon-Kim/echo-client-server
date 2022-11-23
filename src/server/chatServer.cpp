@@ -1,5 +1,7 @@
 #include "chatServer.hpp"
 
+int serverSocketDescriptorForSignal;
+
 /**
  * @brief Signal handler function
  * 
@@ -15,6 +17,25 @@ void serverInterruptHandler(const int signo) {
             break;
         default: break;
     }
+
+    isServerTerminated.store(true);
+
+#ifdef DEBUG
+    debug << "Close welcoming socket descriptor\n";
+#endif
+    close(serverSocketDescriptorForSignal);
+
+#ifdef DEBUG
+    debug << "Close each socket descriptor connected with clients\n";
+#endif
+    [](std::unordered_set<int>& clientList) {
+        std::lock_guard<std::mutex> lock(m);
+
+        for(auto it = clientList.begin(); it != clientList.end(); it++) {
+            close(*it);
+            clientList.erase(it);
+        }
+    }(clientList);
 
     exit(EXIT_SUCCESS);
 }
@@ -58,7 +79,10 @@ void threadConnection(int clientSocketDescriptor, const struct sockaddr_in& clie
     debug << "Nickname: " << nickname << '\n';
 #endif
     
-    while( true ) {
+    while(not isServerTerminated.load()) {
+#ifdef DEBUG
+        sleep(1);
+#endif
         switch(recvMessage(clientSocketDescriptor, msg)) {
         case RECV_FAILURE:
             std::cerr << "Error: Error while receive message from client\n";
@@ -68,16 +92,30 @@ void threadConnection(int clientSocketDescriptor, const struct sockaddr_in& clie
 
             [clientSocketDescriptor](std::unordered_set<int>& clientList) {
                 std::lock_guard<std::mutex> lock(m);
+#ifdef DEBUG
+                debug << "Set mutex and close the client socket descriptor\n";
+#endif
+                close(clientSocketDescriptor);
                 clientList.erase(clientList.find(clientSocketDescriptor));
             }(clientList);
 
-            break;
+            return;
         case RECV_SUCCESS:
             oss.str(""), oss.clear();
             oss << nickname << ": " << msg << '\n';
             std::cout << oss.str();
-            if(isBroadcast) broadcast(clientSocketDescriptor, oss.str(), isEcho);
-            else if(isEcho) sendMessage(clientSocketDescriptor, msg);
+            if(isBroadcast) {
+#ifdef DEBUG
+                debug << "Broadcasting to each clients\n";
+#endif
+                broadcast(clientSocketDescriptor, oss.str(), isEcho);
+            }
+            else if(isEcho) {
+#ifdef DEBUG
+                debug << "Resending message to the client\n";
+#endif
+                sendMessage(clientSocketDescriptor, oss.str());
+            }
             break;
         default: break;
         }
@@ -130,6 +168,8 @@ bool serverSocketSetting(int& serverSocketDescriptor, const int port) {
 
         return false;
     }
+
+    serverSocketDescriptorForSignal = serverSocketDescriptor;
 
     // Initialize socket
     if(not initSocket(serverSocket, port)) {
@@ -223,23 +263,23 @@ bool broadcast(const int senderSocketDescriptor, const std::string& msg, const b
 void printBindError() {
     switch(errno) {
     case EACCES: 
-        std::cerr << "The address is protected, and the user is not the superuser." << std::endl;
+        std::cerr << "The address is protected, and the user is not the superuser.\n";
         break;
     case EADDRINUSE:
-        std::cerr << "The given address is already in use." << std::endl;
+        std::cerr << "The given address is already in use.\n";
         break;
     case EBADF:
-        std::cerr << "sockfd is not a valid file descriptor." << std::endl;
+        std::cerr << "sockfd is not a valid file descriptor.\n";
         break;
     case EINVAL:
         std::cerr << "The socket is already bound to an address.\n";
-        std::cerr << "addrlen is wrong, or addr is not a valid address for this socket's domain." << std::endl;
+        std::cerr << "addrlen is wrong, or addr is not a valid address for this socket's domain.\n";
         break;
     case ENOTSOCK:
-        std::cerr << "The file descriptor sockfd does not refer to a socket." << std::endl;
+        std::cerr << "The file descriptor sockfd does not refer to a socket.\n";
         break;
     default:
-        std::cerr << "Unknown error occured" << std::endl;
+        std::cerr << "Unknown error occured.\n";
         break;
     }
 }
@@ -247,19 +287,19 @@ void printBindError() {
 void printListenError() {
     switch(errno) {
     case EADDRINUSE:
-        std::cerr << "Another socket is already listening on the same port." << std::endl;
+        std::cerr << "Another socket is already listening on the same port.\n";
         break;
     case EBADF:
-        std::cerr << "The argument sockfd is not a valid file descriptor." << std::endl;
+        std::cerr << "The argument sockfd is not a valid file descriptor.\n";
         break;
     case ENOTSOCK:
-        std::cerr << "The file descriptor sockfd does not refer to a socket." << std::endl;
+        std::cerr << "The file descriptor sockfd does not refer to a socket.\n";
         break;
     case EOPNOTSUPP:
-        std::cerr << "The socket is not of a type that supports the listen() operation." << std::endl;
+        std::cerr << "The socket is not of a type that supports the listen() operation.\n";
         break;
     default:
-        std::cerr << "Unknown error occured" << std::endl;
+        std::cerr << "Unknown error occured.\n";
         break;
     }
 }
@@ -267,44 +307,44 @@ void printListenError() {
 void printAcceptError() {
     switch(errno) {
     case EAGAIN:
-        std::cerr << "The socket is marked nonblocking and no connections are  present  to  be  accepted." << std::endl;
+        std::cerr << "The socket is marked nonblocking and no connections are present to be accepted.\n";
         break;
     case EBADF:
-        std::cerr << "sockfd is not an open file descriptor." << std::endl;
+        std::cerr << "sockfd is not an open file descriptor.\n";
         break;
     case ECONNABORTED:
-        std::cerr << "A connection has been aborted." << std::endl;
+        std::cerr << "A connection has been aborted.\n";
         break;
     case EFAULT:
-        std::cerr << "The addr argument is not in a writable part of the user address space." << std::endl;
+        std::cerr << "The addr argument is not in a writable part of the user address space.\n";
     case EINTR:
-        std::cerr << "The system call was interrupted by a signal that was caught before a valid connection arrived." << std::endl;
+        std::cerr << "The system call was interrupted by a signal that was caught before a valid connection arrived.\n";
         break;
     case EINVAL:
-        std::cerr << "Socket is not listening for connections, or addrlen is invalid" << std::endl;
+        std::cerr << "Socket is not listening for connections, or addrlen is invalid.\n";
         break;
     case EMFILE:
-        std::cerr << "The per-process limit on the number of open file descriptors has been reached." << std::endl;
+        std::cerr << "The per-process limit on the number of open file descriptors has been reached.\n";
         break;
     case ENFILE:
-        std::cerr << "The system-wide limit on the total number of open files has been reached." << std::endl;
+        std::cerr << "The system-wide limit on the total number of open files has been reached\n";
         break;
     case ENOBUFS: 
     case ENOMEM:
         std::cerr << "Not  enough  free  memory.\n";
-        std::cerr << "This often means that the memory allocation is limited by the socket buffer limits, not by the system memory." << std::endl;
+        std::cerr << "This often means that the memory allocation is limited by the socket buffer limits, not by the system memory.\n";
         break;
     case ENOTSOCK:
-        std::cerr << "The file descriptor sockfd does not refer to a socket." << std::endl;
+        std::cerr << "The file descriptor sockfd does not refer to a socket.\n";
         break;
     case EOPNOTSUPP:
-        std::cerr << "The referenced socket is not of type SOCK_STREAM." << std::endl;
+        std::cerr << "The referenced socket is not of type SOCK_STREAM.\n";
         break;
     case EPROTO:
-        std::cerr << "Protocol error." << std::endl;
+        std::cerr << "Protocol error.\n";
         break;
     default:
-        std::cerr << "Unknown error occured" << std::endl;
+        std::cerr << "Unknown error occured.\n";
         break;
     }
 }
