@@ -1,8 +1,8 @@
 CXX = g++
 CXXFLAGS = -W -Wall -O2
 DFLAGS = -W -Wall -g -O0
-TARGET = ../../bin/chatClient
-DTARGET = ../../bin/chatClient-test
+TARGET = ../../bin/echo-client
+DTARGET = ../../bin/echo-client-test
 OBJECTS = ../chatProgram.o chatClient.o ip.o main.o
 DOBJECTS = ../chatProgram-test.o chatClient-test.o ip-test.o main-test.o
 LIBS = -lpthread
